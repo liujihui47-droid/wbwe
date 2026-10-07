@@ -1,73 +1,80 @@
-# 交付说明 / 推送指引
+# 交付说明
 
-本仓库已经在本地**完整提交**（1 个 commit，40 个文件），只差最后一步 push。
-
----
-
-## 一、为什么没有自动推送
-
-远端 `https://github.com/liujihui47-droid/workbuddy-wallpaper-engine.git` 是**私有仓库**，
-而这台机器上**没有任何 GitHub 凭据**：
-
-- 没有 `~/.git-credentials`
-- 没有 `~/.ssh`
-- 没有配置 credential helper
-- 环境里没有 `GITHUB_TOKEN` / `GH_TOKEN`
-
-`git ls-remote` 的返回是 `could not read Username for 'https://github.com'`
-（私有仓库对未认证请求的表现），所以本地无法完成推送。
-
-本地仓库已经配好：
+## 状态：已推送 ✅
 
 ```
+仓库    https://github.com/liujihui47-droid/wbwe
 分支    main
-远端    origin -> https://github.com/liujihui47-droid/workbuddy-wallpaper-engine.git
-提交    65e8ba6  feat: 初始实现 workbuddy-wallpaper-engine
+提交    a7e76e4（3 个 commit，42 个文件）
 ```
+
+已验证：**从 GitHub 全新克隆** → 关键二进制 sha256 与本地一致 →
+在该克隆里跑 `node test/run-all.mjs` → **9 个测试套件全部通过**。
+
+安装到 WorkBuddy 只需三步：
+
+```powershell
+git clone https://github.com/liujihui47-droid/wbwe.git
+cd wbwe
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+
+# 先从系统托盘退出 WorkBuddy（它有进程保护，本工具无法结束它），然后：
+node src/cli.mjs launch
+```
+
+> 之前那个 `workbuddy-wallpaper-engine` 仓库（私有）保留为 `upstream` 远端，未被使用。
+> 如果不再需要，可以在 GitHub 上删掉它。
 
 ---
 
-## 二、推送（三选一）
+## 一、当时推送为什么需要认证（留档，避免下次再踩）
 
-### 方式 A：用 GitHub 令牌（最快）
+GitHub 的**写操作永远需要凭据**，而读公开仓库不需要 —— 所以 `git ls-remote`
+能匿名成功，很容易让人误以为推送也行。实际推送需要令牌，且**令牌必须有
+`Contents: Read and write`**：
 
-在 https://github.com/settings/tokens 生成一个有 `repo` 权限的令牌，然后：
+- 第一版令牌只有读权限 → `remote: Permission to liujihui47-droid/wbwe.git denied`
+  （认证通过、授权不足。这个区分很重要：如果是 `could not read Username`，
+  那是凭据**没送到**；如果是 `Permission ... denied`，那是权限不够。）
+- 修正后：`Contents: Read and write` + Repository access 勾选 `wbwe` → 推送成功
 
-```powershell
-cd workbuddy-wallpaper-engine
+另外远端那个自动生成的 `Initial commit`（只有一个占位 README）与本地**没有共同
+祖先**，所以必须 `--force` 覆盖。远端占位内容已确认可丢弃。
 
-# 把 <TOKEN> 换成你的令牌。注意 URL 里带上用户名。
-git remote set-url origin https://liujihui47-droid:<TOKEN>@github.com/liujihui47-droid/workbuddy-wallpaper-engine.git
+### 一个 git 的坑（已在 scripts/push.ps1 里绕过）
 
-git push -u origin main
+用 `-c http.extraHeader=AUTHORIZATION: basic <b64>` 传令牌**不管用**：
+那个配置属于父进程，而真正发 HTTP 请求的是 `git-remote-https` 子进程，它读不到，
+于是 git 转而去要 username，报 `could not read Username for 'https://github.com'`。
+可行的做法是把凭据**内嵌进临时的 remote URL**，只在那一条命令里用，
+绝不写进 `.git/config`。`scripts/push.ps1` 就是这么做的，并且：
+- 输出统一经过 `Redact()`，把令牌替换成 `***` 再打印
+- 用完立即把 `$Token` / `$authUrl` 置空
+- 支持从 `$env:GH_TOKEN`、`-Token`、或 `.gh-token` 文件读（该文件已 gitignore）
 
-# 推完把令牌从远端地址里摘掉，别留在 .git/config 里
-git remote set-url origin https://github.com/liujihui47-droid/workbuddy-wallpaper-engine.git
-```
+---
 
-### 方式 B：用 Git Credential Manager（会弹窗登录）
-
-```powershell
-cd workbuddy-wallpaper-engine
-git push -u origin main
-# 弹窗里登录一次，之后 git 会记住
-```
-
-如果之前为了排查把 helper 清掉了，先恢复：
-
-```powershell
-git config --global credential.helper manager
-```
-
-### 方式 C：改用 SSH
+## 二、日后要再推的话
 
 ```powershell
-cd workbuddy-wallpaper-engine
-git remote set-url origin git@github.com:liujihui47-droid/workbuddy-wallpaper-engine.git
-git push -u origin main
+# 方式 A：环境变量（令牌不进命令历史）
+$env:GH_TOKEN = "github_pat_xxx"
+powershell -ExecutionPolicy Bypass -File scripts/push.ps1
+
+# 方式 B：直接参数
+powershell -ExecutionPolicy Bypass -File scripts/push.ps1 -Token "github_pat_xxx"
+
+# 方式 C：写进 .gh-token（已被 .gitignore 忽略，令牌不进对话/历史）
+#   然后： powershell -ExecutionPolicy Bypass -File scripts/push.ps1
+
+# 只试算不真推：
+powershell -ExecutionPolicy Bypass -File scripts/push.ps1 -DryRun
 ```
 
-> ⚠️ 本机的 git 用了 `schannel` 后端时会报
+脚本会自己：跑测试 → 检查工作区是否干净 → 检测两边是否有共同祖先
+（无共同祖先且没加 `-Force` 会直接中止）→ 推送 → 抹掉令牌 → 提醒你撤销令牌。
+
+> ⚠️ 本机的 git 用 `schannel` 后端时会报
 > `schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS`。
 > 解决办法：给这条命令加 `-c http.sslBackend=openssl`，例如
 > `git -c http.sslBackend=openssl push -u origin main`
@@ -75,18 +82,23 @@ git push -u origin main
 
 ---
 
-## 三、推送前建议先自己跑一遍
+## 三、拿到仓库后先自己跑一遍
 
 ```powershell
-cd workbuddy-wallpaper-engine
+git clone https://github.com/liujihui47-droid/wbwe.git
+cd wbwe
 node test/run-all.mjs      # 应输出「全部通过（9 个测试套件）」
 ```
 
 不需要 `npm install` —— 本项目零 npm 依赖。
 
+> 这一步我已经替你在**全新克隆**上跑过一次（2026-10-07）：
+> 9 个套件全绿，`webwallgl-1.4.2.global.min.js` 与 `RePKG.exe`
+> 的 sha256 与开发副本完全一致（说明 git 的文本规范化没有破坏 vendored 二进制）。
+
 ---
 
-## 四、推送之后：在真机上验证
+## 四、在真机上验证
 
 我在沙箱里**无法**做端到端验证（原因见下节），所以第一次真机跑请按这个顺序：
 

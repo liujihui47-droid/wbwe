@@ -58,8 +58,8 @@ Node 不需要单独安装：WorkBuddy 自带一个（实测 22.22.2），安装
 ## 安装
 
 ```powershell
-git clone https://github.com/liujihui47-droid/workbuddy-wallpaper-engine.git
-cd workbuddy-wallpaper-engine
+git clone https://github.com/liujihui47-droid/wbwe.git
+cd wbwe
 
 # 自检 + 生成便捷启动入口
 powershell -ExecutionPolicy Bypass -File scripts/install.ps1
