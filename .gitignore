@@ -27,6 +27,10 @@ _repkg-test/
 # 开发期的临时目录（侦察、抓包、试验）
 _research/
 
+# ⚠️ 绝不入库：GitHub 令牌的临时存放点（scripts/push.ps1 会读它）
+.gh-token
+*.token
+
 # 编辑器与系统
 .vscode/
 .idea/
