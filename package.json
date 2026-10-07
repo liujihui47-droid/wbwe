@@ -1,0 +1,41 @@
+{
+  "name": "workbuddy-wallpaper-engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "把本机 Wallpaper Engine 的壁纸变成 WorkBuddy 桌面的动态背景：Video 直接播放、Web 以 iframe 加载、Scene 通过 WebWallGL 实时渲染，配 iOS 液态玻璃设置面板（模糊 / 暗度 / 边框 / 透明度 / 字体 / 光标）与内容分级、类型过滤、轮播、倍速、翻转、隐藏恢复。",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "wbwe": "./src/cli.mjs"
+  },
+  "scripts": {
+    "we:list": "node src/cli.mjs we list",
+    "apply": "node src/cli.mjs apply",
+    "restore": "node src/cli.mjs restore",
+    "status": "node src/cli.mjs status",
+    "guard": "node src/cli.mjs guard",
+    "test": "node test/run-all.mjs",
+    "test:we": "node test/verify-we-library.mjs",
+    "test:units": "node test/verify-units.mjs"
+  },
+  "keywords": [
+    "workbuddy",
+    "codebuddy",
+    "wallpaper-engine",
+    "wallpaper",
+    "electron",
+    "cdp",
+    "skin",
+    "theme",
+    "webwallgl"
+  ],
+  "license": "MIT",
+  "dependencies": {},
+  "author": "liujihui47-droid",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liujihui47-droid/workbuddy-wallpaper-engine.git"
+  }
+}

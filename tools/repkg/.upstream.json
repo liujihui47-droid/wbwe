@@ -1,0 +1,19 @@
+{
+  "name": "RePKG",
+  "version": "0.4.0",
+  "commit": "e69a76dcdb461f5bdeba01a8a7fa5131a09bcefe",
+  "file": "RePKG.exe",
+  "bytes": 3901440,
+  "license": "MIT",
+  "repository": "https://github.com/notscuffed/repkg",
+  "runtime": "NativeAOT 单文件原生编译 —— 已实测**不需要**系统安装 .NET（二进制里没有 hostfxr/coreclr/clrjit 任何标记；把 DOTNET_ROOT 指向不存在的目录仍能正常运行）。",
+  "purpose": "解包 Wallpaper Engine 的 scene.pkg 并把它内部的 .tex 贴图转成图片，用来给 scene 壁纸提供高清静态帧（实测 3840x2160，比创意工坊缩略图 1024x1024 的像素量高 16 倍）。",
+  "thirdPartyNotices": "THIRD-PARTY-NOTICES.txt —— 原样保留，内含 CommandLineParser / DXT Decompression / K4s.Compression.LZ4 / Newtonsoft.Json / ImageSharp 的许可全文。",
+  "cliUsage": {
+    "extract": "RePKG.exe extract -o <outDir> -s --overwrite <scene.pkg>",
+    "noteSingleDir": "-s / --singledir 把所有提取结果放在同一层，便于挑主贴图",
+    "gotcha": "⚠️ 不要用 -e/--onlyexts 写 png —— pkg 里贴图的原扩展名是 .tex，RePKG 提取时顺手转成图片；写 png 会一张都匹配不到。"
+  },
+  "doNotEdit": "原样分发，不修改。升级请整体替换并同步更新本文件里的 bytes 与 commit。",
+  "attribution": "RePKG by NotScuffed, MIT. See THIRD-PARTY-NOTICES.md."
+}

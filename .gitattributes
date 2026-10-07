@@ -1,0 +1,56 @@
+# 行尾与二进制策略。
+#
+# ⚠️ 这个文件是**踩过坑之后**才写对的，改动前请先看完注释。
+#    gitattributes 的规则是"最后匹配者生效"，所以顺序很关键：
+#    通用规则放最前，特例放后面。
+#
+# 上一个版本犯的两个错（都已在本文件里修正）：
+#   1. 写了 `*.ps1 text eol=crlf`，但后面（其实是前面）的 `* text=auto eol=lf`
+#      把它覆盖了 → install.ps1 被规范化，**UTF-8 BOM 被剥掉** →
+#      PowerShell 5.1 读它会按 GBK 解析 → 中文注释变成语法错误。
+#   2. `vendor/webwallgl/*.js text eol=lf` 把那个 952624 字节的压缩产物
+#      当文本做了行尾规范化，存进 git 变成 950112 字节 ——
+#      vendored 产物**必须逐字节不变**，否则 sha256 校验失去意义。
+
+# --- 通用：默认按文本处理，统一 LF ---
+* text=auto eol=lf
+
+# --- 源码 / 文档 ---
+*.mjs   text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# --- 注入分片：行尾必须确定 ---
+src/inject/*.js text eol=lf
+
+# --- PowerShell ---
+# ⚠️ 标成 binary 是刻意的，不是偷懒：
+#    install.ps1 带 UTF-8 BOM（PowerShell 5.1 必需，否则中文注释被按 GBK 解析），
+#    而 git 的文本规范化会移动/剥掉 BOM。用 -text（不当作文本）保住字节原样。
+#    代价是 git 不显示它的行尾差异 —— 对这个文件完全可以接受。
+*.ps1   -text
+
+# --- vendored / 分发的外部产物：逐字节冻结 ---
+# 这些文件有 sha256 记录（见各自的 .upstream.json），任何规范化都会让校验失败。
+vendor/webwallgl/*.js  -text -diff
+tools/repkg/*.exe      -text -diff
+*-NOTICES.txt          -text
+
+# --- 其它二进制 ---
+*.dll   binary
+*.node  binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.mp4   binary
+*.webm  binary
+*.pkg   binary
+*.zip   binary
+
+*.orig  -diff

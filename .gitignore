@@ -1,0 +1,36 @@
+# 依赖与构建产物
+node_modules/
+*.log
+npm-debug.log*
+
+# 预览页是 scripts/make-preview.mjs 生成的产物，不纳入版本管理
+preview/
+
+# 本项目的运行时状态（正常情况下它在 %LOCALAPPDATA%，这里防一手：
+# 有人用 WBWE_STATE_DIR 指到仓库里时不要把状态/缓存/日志提交上去）
+.wbwe-state/
+state.json
+injector.log
+guard-*.pid
+cache/
+
+# scene 解包产物：
+# ⚠️ 绝对不许入库。这些是从创意工坊素材解出来的贴图，版权归原作者，
+#    而且单体可达几 MB、几十条就是几百 MB。本项目只引用「路径」。
+hero.jpg
+hero.jpeg
+hero.png
+hero.webp
+batch-extract-*/
+_repkg-test/
+
+# 开发期的临时目录（侦察、抓包、试验）
+_research/
+
+# 编辑器与系统
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store
